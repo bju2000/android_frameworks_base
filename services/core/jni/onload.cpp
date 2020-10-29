@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2009 The Android Open Source Project
- *
+ * Copyright (C) 2015-2016 Preetam J. D'Souza
+ * Copyright (C) 2016 The Maru OS Project
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -52,6 +53,7 @@ int register_android_server_HardwarePropertiesManagerService(JNIEnv* env);
 int register_android_server_SyntheticPasswordManager(JNIEnv* env);
 int register_android_server_GraphicsStatsService(JNIEnv* env);
 int register_android_hardware_display_DisplayViewport(JNIEnv* env);
+int register_android_server_mperspective_PerspectiveService(JNIEnv* env);
 int register_android_server_net_NetworkStatsFactory(JNIEnv* env);
 int register_android_server_net_NetworkStatsService(JNIEnv* env);
 int register_android_server_security_VerityUtils(JNIEnv* env);
@@ -102,6 +104,7 @@ extern "C" jint JNI_OnLoad(JavaVM* vm, void* /* reserved */)
     register_android_server_SyntheticPasswordManager(env);
     register_android_server_GraphicsStatsService(env);
     register_android_hardware_display_DisplayViewport(env);
+	register_android_server_mperspective_PerspectiveService(env);
     register_android_server_net_NetworkStatsFactory(env);
     register_android_server_net_NetworkStatsService(env);
     register_android_server_security_VerityUtils(env);

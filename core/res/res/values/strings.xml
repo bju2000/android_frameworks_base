@@ -3,6 +3,8 @@
 /* //device/apps/common/assets/res/any/strings.xml
 **
 ** Copyright 2006, The Android Open Source Project
+** Copyright 2015-2016, Preetam J. D'Souza
+** Copyright 2016, The Maru OS Project
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -5408,5 +5410,12 @@
 
     <!-- ChooserActivity - Alphabetically sorted apps list label. [CHAR LIMIT=NONE] -->
     <string name="chooser_all_apps_button_label">Apps list</string>
+
+    <!-- maru -->
+    <string name="desktop_notification_title_starting">Maru Desktop starting...</string>
+    <string name="desktop_notification_title_stopping">Maru Desktop stopping...</string>
+    <string name="desktop_notification_title_running">Maru Desktop running</string>
+    <string name="desktop_notification_msg">Touch to manage desktop settings.</string>
+    <!-- /maru -->
 
 </resources>

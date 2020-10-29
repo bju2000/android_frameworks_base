@@ -2,6 +2,8 @@
 <!--
 /*
 ** Copyright 2009, The Android Open Source Project
+** Copyright 2015-2016, Preetam J. D'Souza
+** Copyright 2016, The Maru OS Project
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -117,7 +119,7 @@
 
     <!-- Tiles native to System UI. Order should match "quick_settings_tiles_default" -->
     <string name="quick_settings_tiles_stock" translatable="false">
-        wifi,cell,battery,dnd,flashlight,rotation,bt,airplane,nfc,location,hotspot,inversion,saver,dark,work,cast,night,adb_network,ambient_display,caffeine,heads_up,livedisplay,aod,reading_mode,sync,usb_tether,volume_panel,vpn,profiles,powershare
+        wifi,cell,battery,dnd,flashlight,rotation,bt,airplane,nfc,location,hotspot,inversion,saver,dark,work,cast,night,mmirror,adb_network,ambient_display,caffeine,heads_up,livedisplay,aod,reading_mode,sync,usb_tether,volume_panel,vpn,profiles,powershare
     </string>
 
     <!-- The tiles to display in QuickSettings -->

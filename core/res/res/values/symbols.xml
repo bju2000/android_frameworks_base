@@ -1,5 +1,7 @@
 <!--
 /* Copyright 2012, The Android Open Source Project
+** Copyright 2015-2016, Preetam J. D'Souza
+** Copyright 2016, The Maru OS Project
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -3866,4 +3868,14 @@
 
   <!-- For Pdn throttle feature -->
   <java-symbol type="bool" name="config_pdp_retry_for_29_33_55_enabled" />
+  
+  <!-- maru -->
+  <!-- From PerspectiveService -->
+  <java-symbol type="string" name="desktop_notification_title_starting" />
+  <java-symbol type="string" name="desktop_notification_title_stopping" />
+  <java-symbol type="string" name="desktop_notification_title_running" />
+  <java-symbol type="string" name="desktop_notification_msg" />
+  <java-symbol type="drawable" name="ic_mdesktop" />
+  <!-- /maru -->
+
 </resources>

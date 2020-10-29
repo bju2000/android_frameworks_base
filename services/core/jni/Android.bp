@@ -20,6 +20,7 @@ cc_library_static {
         "BroadcastRadio/TunerCallback.cpp",
         "BroadcastRadio/convert.cpp",
         "BroadcastRadio/regions.cpp",
+        "com_android_server_mperspective_PerspectiveService.cpp",
         "com_android_server_AlarmManagerService.cpp",
         "com_android_server_am_BatteryStatsService.cpp",
         "com_android_server_connectivity_Vpn.cpp",
@@ -60,6 +61,7 @@ cc_library_static {
         "bionic/libc/private",
         "frameworks/base/libs",
         "frameworks/native/services",
+        "vendor/maruos/include",
         "system/gatekeeper/include",
     ],
 }
@@ -135,6 +137,7 @@ cc_defaults {
         "android.system.suspend@1.0",
         "suspend_control_aidl_interface-cpp",
         "vendor.lineage.power@1.0",
+        "libperspective",
     ],
 
     static_libs: [

@@ -1,5 +1,7 @@
 /*
  * Copyright (C) 2012 The Android Open Source Project
+ * Copyright (C) 2015-2016 Preetam J. D'Souza
+ * Copyright (C) 2016 The Maru OS Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -90,6 +92,12 @@ interface IDisplayManager {
 
     // Get a stable metric for the device's display size. No permissions required.
     Point getStableDisplaySize();
+    
+    void enablePhoneMirroring();
+
+    void disablePhoneMirroring();
+
+    boolean isPhoneMirroringEnabled();
 
     // Requires BRIGHTNESS_SLIDER_USAGE permission.
     ParceledListSlice getBrightnessEvents(String callingPackage);
@@ -124,4 +132,5 @@ interface IDisplayManager {
     // The wide gamut color space is returned from composition pipeline
     // based on hardware capability.
     int getPreferredWideGamutColorSpaceId();
+
 }

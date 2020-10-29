@@ -1,5 +1,7 @@
 /*
  * Copyright (C) 2006 The Android Open Source Project
+ * Copyright (C) 2015-2016 Preetam J. D'Souza
+ * Copyright (C) 2016 The Maru OS Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -4637,6 +4639,16 @@ public abstract class Context {
      * @see #getSystemService(String)
      */
     public static final String TIME_ZONE_RULES_MANAGER_SERVICE = "timezone";
+    
+     /**
+     * Use with {@link #getSystemService} to retrieve a {@link
+     * android.mperspective.PerspectiveManager} instance for managing
+     * perspectives.
+     * @see #getSystemService
+     * @see android.mperspective.PerspectiveManager
+     * @hide
+     */
+    public static final String PERSPECTIVE_SERVICE = "perspective";
 
     /**
      * Use with {@link #getSystemService(String)} to retrieve a

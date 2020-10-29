@@ -57,6 +57,12 @@ public class MetricsLogger {
 
     public static final int VIEW_UNKNOWN = MetricsEvent.VIEW_UNKNOWN;
     public static final int LOGTAG = EventLogTags.SYSUI_MULTI_ACTION;
+    
+    //maru
+
+    public static final int QS_MMIRROR_TOGGLE = 1000;
+    public static final int QS_MDESKTOP_TOGGLE = 1001;
+    public static final int MDESKTOP_TWEAKS = 1002;
 
     /** Write an event log record, consisting of content.serialize(). */
     @UnsupportedAppUsage
