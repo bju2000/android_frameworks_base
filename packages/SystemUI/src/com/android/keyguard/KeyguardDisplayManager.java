@@ -111,6 +111,10 @@ public class KeyguardDisplayManager {
             if (DEBUG) Log.i(TAG, "Do not show KeyguardPresentation on a private display");
             return false;
         }
+        if ((mTmpDisplayInfo.flags & Display.FLAG_PRESENTATION) != 0) {
+            if (DEBUG) Log.i(TAG, "Do not show KeyguardPresentation on HDMI or Wireless displays");
+            return false;
+        }
         return true;
     }
     /**
