@@ -10,6 +10,7 @@ package com.android.systemui.qs.tiles;
 import android.content.Context;
 import android.content.Intent;
 import android.hardware.display.DisplayManager;
+import android.service.quicksettings.Tile;
 import android.util.Log;
 import android.view.Display;
 
@@ -26,8 +27,7 @@ import javax.inject.Inject;
 public class MMirrorTile extends QSTileImpl<BooleanState> {
     private static final String TAG = "MMirrorTile";
 
-    private static final int mDisabledIcon = R.drawable.ic_mirroring_disabled;
-    private static final int mEnabledIcon = R.drawable.ic_mirroring_enabled;
+    private final Icon mIcon = ResourceIcon.get(R.drawable.ic_qs_mirroring);
 
     private final DisplayManager mDisplayManager;
 
@@ -49,7 +49,9 @@ public class MMirrorTile extends QSTileImpl<BooleanState> {
 
     @Override
     public BooleanState newTileState() {
-        return new BooleanState();
+        BooleanState state = new BooleanState();
+        state.handlesLongClick = false;
+        return state;
     }
 
     @Override
@@ -67,7 +69,8 @@ public class MMirrorTile extends QSTileImpl<BooleanState> {
         final boolean hasPresentationDisplay = !mPresentationDisplays.isEmpty();
         state.value = mDisplayManager.isPhoneMirroringEnabled();
         state.label = mContext.getString(R.string.quick_settings_mirroring_mode_label);
-        state.icon = ResourceIcon.get(state.value ? mEnabledIcon : mDisabledIcon);
+        state.icon = mIcon;
+        state.state = state.value ? Tile.STATE_ACTIVE : Tile.STATE_INACTIVE;
     }
 
     @Override
