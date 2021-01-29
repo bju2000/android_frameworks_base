@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2016 The Android Open Source Project
+ * Copyright (C) 2018 The Maru OS Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,6 +64,9 @@ public final class CategoryKey {
             "com.android.settings.category.ia.battery_saver_settings";
     public static final String CATEGORY_SMART_BATTERY_SETTINGS =
             "com.android.settings.category.ia.smart_battery_settings";
+
+    public static final String CATEGORY_MARU_DESKTOP =
+            "com.android.settings.category.ia.desktop";
 
     public static final Map<String, String> KEY_COMPAT_MAP;
 

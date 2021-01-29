@@ -22,6 +22,7 @@ cc_library_static {
         "BroadcastRadio/TunerCallback.cpp",
         "BroadcastRadio/convert.cpp",
         "BroadcastRadio/regions.cpp",
+        "com_android_server_mperspective_PerspectiveService.cpp",
         "stats/PowerStatsPuller.cpp",
         "stats/SubsystemSleepStatePuller.cpp",
         "com_android_server_adb_AdbDebuggingManager.cpp",
@@ -66,6 +67,7 @@ cc_library_static {
     include_dirs: [
         "frameworks/base/libs",
         "frameworks/native/services",
+        "vendor/maruos/include",
         "system/gatekeeper/include",
     ],
 
@@ -168,6 +170,7 @@ cc_defaults {
         "service.incremental",
         "suspend_control_aidl_interface-cpp",
         "vendor.lineage.power@1.0",
+        "libperspective",
     ],
 
     static_libs: [

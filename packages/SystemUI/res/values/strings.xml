@@ -2,6 +2,8 @@
 <!--
 /**
  * Copyright (c) 2009, The Android Open Source Project
+ * Copyright (c) 2015-2016, Preetam J. D'Souza
+ * Copyright (c) 2016, The Maru OS Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -2339,6 +2341,14 @@
 
     <!-- accessibility label for paging indicator in quick settings [CHAR LIMITi=NONE] -->
     <string name="accessibility_quick_settings_page">Page <xliff:g name="current_page" example="1">%1$d</xliff:g> of <xliff:g name="num_pages" example="2">%2$d</xliff:g></string>
+
+    <!-- Maru QuickSettings: MMirror [CHAR LIMIT=NONE] -->
+     <string name="quick_settings_mirroring_mode_label">Mirror screen</string>
+
+    <!-- Announcement made when mirroring changes to disabled (not shown on the screen). [CHAR LIMIT=NONE] -->
+    <string name="accessibility_qs_mirroring_changed_off">Screen mirroring turned off.</string>
+    <!-- Announcement made when mirroring changes to enabled (not shown on the screen). [CHAR LIMIT=NONE] -->
+    <string name="accessibility_qs_mirroring_changed_on">Screen mirroring turned on.</string>
 
     <!-- Plugin control section of the tuner. Non-translatable since it should
          not appear on production builds ever. -->

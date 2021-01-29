@@ -1,5 +1,7 @@
 /*
  * Copyright (C) 2012 The Android Open Source Project
+ * Copyright (C) 2015-2016 Preetam J. D'Souza
+ * Copyright (C) 2016 The Maru OS Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -106,6 +108,14 @@ final class DisplayDeviceInfo {
      */
     // TODO (b/114338689): Remove the flag and use WindowManager#REMOVE_CONTENT_MODE_DESTROY
     public static final int FLAG_DESTROY_CONTENT_ON_REMOVAL = 1 << 10;
+
+    /**
+     * maru
+     *
+     * Flag: Indicates that this display should be considered the
+     * default external display.
+     */
+    public static final int FLAG_DEFAULT_EXTERNAL_DISPLAY = 1 << 31;
 
     /**
      * Flag: The display cutout of this display is masked.
@@ -504,6 +514,9 @@ final class DisplayDeviceInfo {
         }
         if ((flags & FLAG_CAN_SHOW_WITH_INSECURE_KEYGUARD) != 0) {
             msg.append(", FLAG_CAN_SHOW_WITH_INSECURE_KEYGUARD");
+        }
+        if ((flags & FLAG_DEFAULT_EXTERNAL_DISPLAY) != 0) {
+            msg.append(", FLAG_DEFAULT_EXTERNAL_DISPLAY");
         }
         if ((flags & FLAG_MASK_DISPLAY_CUTOUT) != 0) {
             msg.append(", FLAG_MASK_DISPLAY_CUTOUT");

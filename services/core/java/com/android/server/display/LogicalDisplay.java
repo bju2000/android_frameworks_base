@@ -372,9 +372,18 @@ final class LogicalDisplay {
      */
     public void configureDisplayLocked(SurfaceControl.Transaction t,
             DisplayDevice device,
-            boolean isBlanked) {
+            boolean isBlanked )
+    {
+       configureDisplayLocked(t,device,isBlanked,-1);
+    }
+
+    public void configureDisplayLocked(SurfaceControl.Transaction t,
+            DisplayDevice device,
+            boolean isBlanked,int layerStackOverride) {
         // Set the layer stack.
-        device.setLayerStackLocked(t, isBlanked ? BLANK_LAYER_STACK : mLayerStack);
+         int layerStack = layerStackOverride < 0 ? mLayerStack : layerStackOverride;
+         device.setLayerStackLocked(t, isBlanked ? BLANK_LAYER_STACK : layerStack);
+    	//
 
         // Set the color mode and allowed display mode.
         if (device == mPrimaryDisplayDevice) {
