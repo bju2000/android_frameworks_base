@@ -150,6 +150,9 @@ public class PermissionManagerService {
     private static final int USER_PERMISSION_FLAGS = FLAG_PERMISSION_USER_SET
             | FLAG_PERMISSION_USER_FIXED;
 
+    /** All storage permissions */
+    private static final List<String> STORAGE_PERMISSIONS = new ArrayList<>();
+
     /** If the permission of the value is granted, so is the key */
     private static final Map<String, String> FULLER_PERMISSION_MAP = new HashMap<>();
 
@@ -158,6 +161,9 @@ public class PermissionManagerService {
                 Manifest.permission.ACCESS_FINE_LOCATION);
         FULLER_PERMISSION_MAP.put(Manifest.permission.INTERACT_ACROSS_USERS,
                 Manifest.permission.INTERACT_ACROSS_USERS_FULL);
+        STORAGE_PERMISSIONS.add(Manifest.permission.READ_EXTERNAL_STORAGE);
+        STORAGE_PERMISSIONS.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        STORAGE_PERMISSIONS.add(Manifest.permission.ACCESS_MEDIA_LOCATION);
     }
 
     /** Lock to protect internal data access */
@@ -590,6 +596,57 @@ public class PermissionManagerService {
     }
 
     /**
+     * If the app is updated, and has scoped storage permissions, then it is possible that the
+     * app updated in an attempt to get unscoped storage. If so, revoke all storage permissions.
+     * @param newPackage The new package that was installed
+     * @param oldPackage The old package that was updated
+     */
+    private void revokeStoragePermissionsIfScopeExpanded(
+            @NonNull PackageParser.Package newPackage,
+            @NonNull PackageParser.Package oldPackage,
+            @NonNull PermissionCallback permissionCallback) {
+        boolean downgradedSdk = oldPackage.applicationInfo.targetSdkVersion >= Build.VERSION_CODES.Q
+                && newPackage.applicationInfo.targetSdkVersion < Build.VERSION_CODES.Q;
+        boolean upgradedSdk = oldPackage.applicationInfo.targetSdkVersion < Build.VERSION_CODES.Q
+                && newPackage.applicationInfo.targetSdkVersion >= Build.VERSION_CODES.Q;
+        boolean newlyRequestsLegacy = !upgradedSdk
+                && !oldPackage.applicationInfo.hasRequestedLegacyExternalStorage()
+                && newPackage.applicationInfo.hasRequestedLegacyExternalStorage();
+
+        if (!newlyRequestsLegacy && !downgradedSdk) {
+            return;
+        }
+
+        final int callingUid = Binder.getCallingUid();
+
+        for (int userId: mUserManagerInt.getUserIds()) {
+            int numRequestedPermissions = newPackage.requestedPermissions.size();
+            for (int i = 0; i < numRequestedPermissions; i++) {
+                PermissionInfo permInfo = getPermissionInfo(newPackage.requestedPermissions.get(i),
+                        newPackage.packageName, 0, callingUid);
+                if (permInfo == null || !STORAGE_PERMISSIONS.contains(permInfo.name)) {
+                    continue;
+                }
+
+                EventLog.writeEvent(0x534e4554, "171430330", newPackage.applicationInfo.uid,
+                        "Revoking permission " + permInfo.name + " from package "
+                                + newPackage.packageName + " as either the sdk downgraded "
+                                + downgradedSdk + " or newly requested legacy full storage "
+                                + newlyRequestsLegacy);
+
+                try {
+                    revokeRuntimePermission(permInfo.name, newPackage.packageName,
+                            false, userId, permissionCallback);
+                } catch (IllegalStateException | SecurityException e) {
+                    Log.e(TAG, "unable to revoke " + permInfo.name + " for "
+                            + newPackage.packageName + " user " + userId, e);
+                }
+            }
+        }
+
+    }
+
+    /**
      * We might auto-grant permissions if any permission of the group is already granted. Hence if
      * the group of a granted permission changes we need to revoke it to avoid having permissions of
      * the new group auto-granted.
@@ -666,8 +723,74 @@ public class PermissionManagerService {
         }
     }
 
-    private void addAllPermissions(PackageParser.Package pkg, boolean chatty) {
-        final int N = pkg.permissions.size();
+    /**
+     * If permissions are upgraded to runtime, or their owner changes to the system, then any
+     * granted permissions must be revoked.
+     *
+     * @param permissionsToRevoke A list of permission names to revoke
+     * @param allPackageNames All package names
+     * @param permissionCallback Callback for permission changed
+     */
+    private void revokeRuntimePermissionsIfPermissionDefinitionChanged(
+            @NonNull List<String> permissionsToRevoke,
+            @NonNull ArrayList<String> allPackageNames,
+            @NonNull PermissionCallback permissionCallback) {
+
+        final int[] userIds = mUserManagerInt.getUserIds();
+        final int numPermissions = permissionsToRevoke.size();
+        final int numUserIds = userIds.length;
+        final int numPackages = allPackageNames.size();
+        final int callingUid = Binder.getCallingUid();
+
+        for (int permNum = 0; permNum < numPermissions; permNum++) {
+            String permName = permissionsToRevoke.get(permNum);
+            BasePermission bp = mSettings.getPermission(permName);
+            if (bp == null || !bp.isRuntime()) {
+                continue;
+            }
+            for (int userIdNum = 0; userIdNum < numUserIds; userIdNum++) {
+                final int userId = userIds[userIdNum];
+                for (int packageNum = 0; packageNum < numPackages; packageNum++) {
+                    final String packageName = allPackageNames.get(packageNum);
+                    final int uid = mPackageManagerInt.getPackageUid(packageName, 0, userId);
+                    if (uid < Process.FIRST_APPLICATION_UID) {
+                        // do not revoke from system apps
+                        continue;
+                    }
+                    final int permissionState = checkPermission(permName, packageName,
+                            Binder.getCallingUid(), userId);
+                    final int flags = getPermissionFlags(permName, packageName,
+                             Binder.getCallingUid(), userId);
+                    final int flagMask = FLAG_PERMISSION_SYSTEM_FIXED
+                            | FLAG_PERMISSION_POLICY_FIXED
+                            | FLAG_PERMISSION_GRANTED_BY_DEFAULT;
+                    if (permissionState == PackageManager.PERMISSION_GRANTED
+                            && (flags & flagMask) == 0) {
+                        EventLog.writeEvent(0x534e4554, "154505240", uid,
+                                "Revoking permission " + permName + " from package "
+                                        + packageName + " due to definition change");
+                        EventLog.writeEvent(0x534e4554, "168319670", uid,
+                                "Revoking permission " + permName + " from package "
+                                        + packageName + " due to definition change");
+                        Slog.e(TAG, "Revoking permission " + permName + " from package "
+                                + packageName + " due to definition change");
+                        try {
+                            revokeRuntimePermission(permName, packageName,
+                                    false, userId, permissionCallback);
+                        } catch (Exception e) {
+                            Slog.e(TAG, "Could not revoke " + permName + " from "
+                                    + packageName, e);
+                        }
+                    }
+                }
+            }
+            bp.setPermissionDefinitionChanged(false);
+        }
+    }
+
+    private List<String> addAllPermissions(PackageParser.Package pkg, boolean chatty) {
+        final int N = ArrayUtils.size(pkg.permissions);
+        ArrayList<String> definitionChangedPermissions = new ArrayList<>();
         for (int i=0; i<N; i++) {
             PackageParser.Permission p = pkg.permissions.get(i);
 
@@ -689,19 +812,24 @@ public class PermissionManagerService {
                     }
                 }
 
+                final BasePermission bp;
                 if (p.tree) {
-                    final BasePermission bp = BasePermission.createOrUpdate(
+                    bp = BasePermission.createOrUpdate(
                             mSettings.getPermissionTreeLocked(p.info.name), p, pkg,
                             mSettings.getAllPermissionTreesLocked(), chatty);
                     mSettings.putPermissionTreeLocked(p.info.name, bp);
                 } else {
-                    final BasePermission bp = BasePermission.createOrUpdate(
+                    bp = BasePermission.createOrUpdate(
                             mSettings.getPermissionLocked(p.info.name),
                             p, pkg, mSettings.getAllPermissionTreesLocked(), chatty);
                     mSettings.putPermissionLocked(p.info.name, bp);
                 }
+                if (bp.isPermissionDefinitionChanged()) {
+                    definitionChangedPermissions.add(p.info.name);
+                }
             }
         }
+        return definitionChangedPermissions;
     }
 
     private void addAllPermissionGroups(PackageParser.Package pkg, boolean chatty) {
@@ -2704,6 +2832,20 @@ public class PermissionManagerService {
                                     }
                                 });
                             }
+                        } else {
+                            mPackageManagerInt.forEachPackage(p -> {
+                                PackageSetting ps = (PackageSetting) p.mExtras;
+                                if (ps == null) {
+                                    return;
+                                }
+                                PermissionsState permissionsState = ps.getPermissionsState();
+                                if (permissionsState.getInstallPermissionState(bp.getName())
+                                        != null) {
+                                    permissionsState.revokeInstallPermission(bp);
+                                    permissionsState.updatePermissionFlags(bp, UserHandle.USER_ALL,
+                                            MASK_PERMISSION_FLAGS_ALL, 0);
+                                }
+                            });
                         }
                         flags |= UPDATE_PERMISSIONS_ALL;
                         it.remove();
@@ -3034,6 +3176,21 @@ public class PermissionManagerService {
         public boolean isPermissionsReviewRequired(@NonNull Package pkg, @UserIdInt int userId) {
             return PermissionManagerService.this.isPermissionsReviewRequired(pkg, userId);
         }
+
+        /**
+         * If the app is updated, and has scoped storage permissions, then it is possible that the
+         * app updated in an attempt to get unscoped storage. If so, revoke all storage permissions.
+         * @param newPackage The new package that was installed
+         * @param oldPackage The old package that was updated
+         */
+        public void revokeStoragePermissionsIfScopeExpanded(
+                @NonNull PackageParser.Package newPackage,
+                @NonNull PackageParser.Package oldPackage,
+                @NonNull PermissionCallback permissionCallback) {
+            PermissionManagerService.this.revokeStoragePermissionsIfScopeExpanded(newPackage,
+                    oldPackage, permissionCallback);
+        }
+
         @Override
         public void revokeRuntimePermissionsIfGroupChanged(
                 @NonNull PackageParser.Package newPackage,
@@ -3043,9 +3200,19 @@ public class PermissionManagerService {
             PermissionManagerService.this.revokeRuntimePermissionsIfGroupChanged(newPackage,
                     oldPackage, allPackageNames, permissionCallback);
         }
+
         @Override
-        public void addAllPermissions(Package pkg, boolean chatty) {
-            PermissionManagerService.this.addAllPermissions(pkg, chatty);
+        public void revokeRuntimePermissionsIfPermissionDefinitionChanged(
+                @NonNull List<String> permissionsToRevoke,
+                @NonNull ArrayList<String> allPackageNames,
+                @NonNull PermissionCallback permissionCallback) {
+            PermissionManagerService.this.revokeRuntimePermissionsIfPermissionDefinitionChanged(
+                    permissionsToRevoke, allPackageNames, permissionCallback);
+        }
+
+        @Override
+        public List<String> addAllPermissions(Package pkg, boolean chatty) {
+            return PermissionManagerService.this.addAllPermissions(pkg, chatty);
         }
         @Override
         public void addAllPermissionGroups(Package pkg, boolean chatty) {

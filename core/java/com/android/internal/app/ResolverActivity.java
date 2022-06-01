@@ -17,6 +17,7 @@
 package com.android.internal.app;
 
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
+import static android.view.WindowManager.LayoutParams.SYSTEM_FLAG_HIDE_NON_SYSTEM_OVERLAY_WINDOWS;
 
 import android.annotation.Nullable;
 import android.annotation.StringRes;
@@ -68,7 +69,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
+import android.view.Window;
 import android.view.WindowInsets;
+import android.view.WindowManager;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
@@ -790,8 +793,21 @@ public class ResolverActivity extends Activity {
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+
+        this.getWindow().addSystemFlags(SYSTEM_FLAG_HIDE_NON_SYSTEM_OVERLAY_WINDOWS);
+    }
+
+    @Override
     protected void onStop() {
         super.onStop();
+
+        final Window window = this.getWindow();
+        final WindowManager.LayoutParams attrs = window.getAttributes();
+        attrs.privateFlags &= ~SYSTEM_FLAG_HIDE_NON_SYSTEM_OVERLAY_WINDOWS;
+        window.setAttributes(attrs);
+
         if (mRegistered) {
             mPackageMonitor.unregister();
             mRegistered = false;
@@ -1097,25 +1113,6 @@ public class ResolverActivity extends Activity {
                         final String packageName = pm.getDefaultBrowserPackageNameAsUser(userId);
                         if (TextUtils.isEmpty(packageName)) {
                             pm.setDefaultBrowserPackageNameAsUser(ri.activityInfo.packageName, userId);
-                        }
-                    } else {
-                        // Update Domain Verification status
-                        ComponentName cn = intent.getComponent();
-                        String packageName = cn.getPackageName();
-                        String dataScheme = (data != null) ? data.getScheme() : null;
-
-                        boolean isHttpOrHttps = (dataScheme != null) &&
-                                (dataScheme.equals(IntentFilter.SCHEME_HTTP) ||
-                                        dataScheme.equals(IntentFilter.SCHEME_HTTPS));
-
-                        boolean isViewAction = (action != null) && action.equals(Intent.ACTION_VIEW);
-                        boolean hasCategoryBrowsable = (categories != null) &&
-                                categories.contains(Intent.CATEGORY_BROWSABLE);
-
-                        if (isHttpOrHttps && isViewAction && hasCategoryBrowsable) {
-                            pm.updateIntentVerificationStatusAsUser(packageName,
-                                    PackageManager.INTENT_FILTER_DOMAIN_VERIFICATION_STATUS_ALWAYS,
-                                    userId);
                         }
                     }
                 } else {
