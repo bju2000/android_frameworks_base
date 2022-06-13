@@ -1330,7 +1330,7 @@ public final class SystemServer {
 
         if (!mOnlyCore) {
 
-            traceBegin("StartPerspectiveService");
+            t.traceBegin("StartPerspectiveService");
  			try {
                    mSystemServiceManager.startService(PerspectiveService.Lifecycle.class);
              } 
@@ -1338,7 +1338,7 @@ public final class SystemServer {
              {
                 reportWtf("starting PerspectiveService", e);
              }
-			   traceEnd();
+			   t.traceEnd();
 
             t.traceBegin("UpdatePackagesIfNeeded");
             try {
